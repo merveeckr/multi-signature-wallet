@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "inputs":  [
                        {
@@ -70,6 +70,32 @@
                        }
                    ],
         "name":  "Deposit",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "triggeredBy",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "EmergencyPaused",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "triggeredBy",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "EmergencyUnpaused",
         "type":  "event"
     },
     {
@@ -187,6 +213,53 @@
         "type":  "event"
     },
     {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  false,
+                           "internalType":  "uint256",
+                           "name":  "newDuration",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "TimeLockDurationChanged",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "uint256",
+                           "name":  "txIndex",
+                           "type":  "uint256"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "uint256",
+                           "name":  "unlockTime",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "TimeLockTriggered",
+        "type":  "event"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "DOMAIN_SEPARATOR",
+        "outputs":  [
+                        {
+                            "internalType":  "bytes32",
+                            "name":  "",
+                            "type":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
         "inputs":  [
                        {
                            "internalType":  "address",
@@ -210,6 +283,21 @@
                        }
                    ],
         "name":  "changeRequirement",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "_duration",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "changeTimeLockDuration",
         "outputs":  [
 
                     ],
@@ -275,6 +363,21 @@
 
                    ],
         "name":  "getBalance",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256",
+                            "name":  "",
+                            "type":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "getChainId",
         "outputs":  [
                         {
                             "internalType":  "uint256",
@@ -386,6 +489,25 @@
                            "type":  "uint256"
                        }
                    ],
+        "name":  "getTransactionHash",
+        "outputs":  [
+                        {
+                            "internalType":  "bytes32",
+                            "name":  "",
+                            "type":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "_txIndex",
+                           "type":  "uint256"
+                       }
+                   ],
         "name":  "isConfirmed",
         "outputs":  [
                         {
@@ -420,6 +542,21 @@
         "inputs":  [
 
                    ],
+        "name":  "nonce",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256",
+                            "name":  "",
+                            "type":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
         "name":  "numConfirmationsRequired",
         "outputs":  [
                         {
@@ -445,6 +582,51 @@
                             "internalType":  "address",
                             "name":  "",
                             "type":  "address"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "pause",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "paused",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "readyTime",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256",
+                            "name":  "",
+                            "type":  "uint256"
                         }
                     ],
         "stateMutability":  "view",
@@ -525,6 +707,32 @@
                             "name":  "txIndex",
                             "type":  "uint256"
                         }
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "timeLockDuration",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256",
+                            "name":  "",
+                            "type":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "unpause",
+        "outputs":  [
+
                     ],
         "stateMutability":  "nonpayable",
         "type":  "function"

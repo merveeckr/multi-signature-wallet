@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /**
  * @title TransactionManager
@@ -13,10 +13,10 @@ abstract contract TransactionManager {
 
     /// @notice Bir multisig işleminin tam kaydı.
     struct Transaction {
-        address to;            // Hedef adres (alıcı ya da kontrat)
-        uint256 value;         // Transfer edilecek ETH miktarı (wei)
-        bytes data;            // Çağrılacak fonksiyon verisi (ABI encoded)
-        bool executed;         // İşlem zincirde yürütüldü mü?
+        address to;               // Hedef adres (alıcı ya da kontrat)
+        uint256 value;            // Transfer edilecek ETH miktarı (wei)
+        bytes data;               // Çağrılacak fonksiyon verisi (ABI encoded)
+        bool executed;            // İşlem zincirde yürütüldü mü?
         uint256 numConfirmations; // Mevcut onay sayısı
     }
 
@@ -27,6 +27,15 @@ abstract contract TransactionManager {
 
     /// @notice txIndex → sahip adresi → onayladı mı?
     mapping(uint256 => mapping(address => bool)) public confirmed;
+
+    /// @notice İşlem zincirde yürütülebilir hale gelme zamanı (unix timestamp).
+    mapping(uint256 => uint256) public readyTime;
+
+    /// @notice execute öncesi beklenmesi gereken süre (saniye). Varsayılan: 24 saat.
+    uint256 public timeLockDuration = 24 hours;
+
+    /// @dev readyTime set edildi mi? Slither incorrect-equality uyarısını önler.
+    mapping(uint256 => bool) private _timeLockInitialized;
 
     // ─── Events ───────────────────────────────────────────────────────────────
 
@@ -78,6 +87,17 @@ abstract contract TransactionManager {
         address indexed executor
     );
 
+    /**
+     * @notice İşlem ilk kez M onaya ulaşıp time-lock'a girdiğinde yayınlanır.
+     * @param txIndex    İşlem dizin numarası.
+     * @param unlockTime execute için gereken en erken unix timestamp.
+     */
+    event TimeLockTriggered(uint256 indexed txIndex, uint256 unlockTime);
+
+    /// @notice Time-lock süresi değiştiğinde yayınlanır.
+    /// @param newDuration Yeni süre (saniye). 0 = time-lock devre dışı.
+    event TimeLockDurationChanged(uint256 newDuration);
+
     // ─── Modifiers ────────────────────────────────────────────────────────────
 
     modifier txExists(uint256 _txIndex) {
@@ -97,6 +117,15 @@ abstract contract TransactionManager {
 
     modifier alreadyConfirmed(uint256 _txIndex) {
         require(confirmed[_txIndex][msg.sender], "TransactionManager: onay bulunamadi");
+        _;
+    }
+
+    /// @dev Time-lock başlatılmış ve bekleme süresi dolmuş olmalı.
+    modifier timeLockPassed(uint256 _txIndex) {
+        require(
+            _timeLockInitialized[_txIndex] && block.timestamp >= readyTime[_txIndex],
+            "TransactionManager: time-lock suresi dolmadi"
+        );
         _;
     }
 
@@ -121,6 +150,20 @@ abstract contract TransactionManager {
             })
         );
         emit SubmitTransaction(txIndex, msg.sender, _to, _value, _data);
+    }
+
+    /**
+     * @dev İşlem ilk kez M onaya ulaştığında time-lock'ı başlatır.
+     *      _timeLockInitialized flag'i ile tekrar yazılması önlenir.
+     *      Onay geri çekilip yeniden verilse bile timer sıfırlanmaz.
+     */
+    function _setTimeLock(uint256 _txIndex) internal {
+        if (!_timeLockInitialized[_txIndex]) {
+            _timeLockInitialized[_txIndex] = true;
+            uint256 unlockTime = block.timestamp + timeLockDuration;
+            readyTime[_txIndex] = unlockTime;
+            emit TimeLockTriggered(_txIndex, unlockTime);
+        }
     }
 
     // ─── View Functions ───────────────────────────────────────────────────────

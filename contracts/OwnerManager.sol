@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /**
  * @title OwnerManager
@@ -101,10 +101,11 @@ abstract contract OwnerManager {
     {
         isOwner[owner] = false;
 
-        // owners dizisinden çıkar
-        for (uint256 i = 0; i < owners.length - 1; i++) {
+        // owners dizisinden çıkar — length cache'lendi (Slither: cache-array-length)
+        uint256 len = owners.length;
+        for (uint256 i = 0; i < len - 1; i++) {
             if (owners[i] == owner) {
-                owners[i] = owners[owners.length - 1];
+                owners[i] = owners[len - 1];
                 break;
             }
         }
@@ -132,7 +133,8 @@ abstract contract OwnerManager {
         ownerDoesNotExist(newOwner)
         notNull(newOwner)
     {
-        for (uint256 i = 0; i < owners.length; i++) {
+        uint256 len = owners.length;
+        for (uint256 i = 0; i < len; i++) {
             if (owners[i] == owner) {
                 owners[i] = newOwner;
                 break;
