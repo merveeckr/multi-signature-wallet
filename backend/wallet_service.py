@@ -16,7 +16,6 @@ from web3 import Web3
 
 # config.py'den ayarları import et
 # Böylece RPC_URL, PRIVATE_KEY gibi şeyleri tekrar yazmak zorunda kalmayız
-
 # Hem "python backend/wallet_service.py" hem de
 # "from backend import wallet_service" şeklinde çalışır
 import sys
@@ -508,96 +507,3 @@ def encode_management_call(function_name: str, *args):
     print(f"  Encoded: {encoded[:20]}...({len(encoded)} byte)")
 
     return encoded
-
-
-# ── EVENT LİSTENER ────────────────────────────────────────
-def listen_events(callback=None):
-    """
-    Kontrattan gelen tüm eventleri dinler ve callback'e iletir.
-
-    Event nedir?
-    Kontrat bir şey yaptığında blockchain'e kayıt düşer.
-    Örneğin yeni işlem gelince SubmitTransaction eventi fırlatılır.
-    Biz bu eventi dinleyip İrem'in arayüzünü güncelleyebiliriz.
-
-    Dinlediğimiz 8 event:
-    İşlem eventleri:
-        SubmitTransaction   → yeni pending işlem geldi
-        ConfirmTransaction  → birileri onayladı
-        RevokeConfirmation  → biri onayını geri çekti
-        ExecuteTransaction  → işlem yürütüldü, para gitti
-        Deposit             → cüzdana ETH yatırıldı
-
-    Sahip eventleri:
-        OwnerAddition       → yeni sahip eklendi
-        OwnerRemoval        → sahip çıkarıldı
-        RequirementChange   → M eşiği değişti
-
-    Parametreler:
-        callback: Her event geldiğinde çağrılacak fonksiyon.
-                  callback(event_name, event_data) şeklinde çağrılır.
-                  None ise sadece konsola yazdırır.
-
-    Kullanım örneği:
-        def benim_callback(event_name, data):
-            print(f"Event geldi: {event_name}")
-            print(data)
-        listen_events(callback=benim_callback)
-    """
-    import time
-
-    # Dinleyeceğimiz tüm eventler ve açıklamaları
-    event_filters = {
-        "SubmitTransaction":  contract.events.SubmitTransaction,
-        "ConfirmTransaction": contract.events.ConfirmTransaction,
-        "RevokeConfirmation": contract.events.RevokeConfirmation,
-        "ExecuteTransaction": contract.events.ExecuteTransaction,
-        "Deposit":            contract.events.Deposit,
-        "OwnerAddition":      contract.events.OwnerAddition,
-        "OwnerRemoval":       contract.events.OwnerRemoval,
-        "RequirementChange":  contract.events.RequirementChange,
-    }
-
-    # Her event için "latest" bloğundan itibaren filtre oluştur
-    # fromBlock="latest" → sadece şu andan itibaren gelen eventleri al
-    filters = {}
-    for event_name, event_class in event_filters.items():
-        try:
-            filters[event_name] = event_class.create_filter(fromBlock="latest")
-        except Exception as e:
-            print(f"[UYARI] {event_name} filtresi oluşturulamadı: {e}")
-
-    print("[EVENT LİSTENER] Dinleme başladı. Çıkmak için Ctrl+C")
-    print(f"[EVENT LİSTENER] {len(filters)} event dinleniyor...")
-
-    # Sonsuz döngü — yeni eventleri sürekli kontrol et
-    while True:
-        for event_name, event_filter in filters.items():
-            try:
-                # Yeni giriş var mı kontrol et
-                new_entries = event_filter.get_new_entries()
-
-                for entry in new_entries:
-                    # Event verisini düzenli formata çevir
-                    event_data = {
-                        "event":       event_name,
-                        "block":       entry.get("blockNumber"),
-                        "tx_hash":     entry.get("transactionHash", b"").hex(),
-                        "args":        dict(entry.get("args", {})),
-                    }
-
-                    # Konsola yazdır
-                    print(f"\n[EVENT] {event_name}")
-                    print(f"  Blok    : {event_data['block']}")
-                    print(f"  TX Hash : {event_data['tx_hash']}")
-                    print(f"  Veriler : {event_data['args']}")
-
-                    # Callback varsa çağır
-                    if callback:
-                        callback(event_name, event_data)
-
-            except Exception as e:
-                print(f"[UYARI] {event_name} okunurken hata: {e}")
-
-        # 2 saniyede bir kontrol et — çok sık sormak gereksiz yük yaratır
-        time.sleep(2)
