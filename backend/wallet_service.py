@@ -16,6 +16,12 @@ from web3 import Web3
 
 # config.py'den ayarları import et
 # Böylece RPC_URL, PRIVATE_KEY gibi şeyleri tekrar yazmak zorunda kalmayız
+
+# Hem "python backend/wallet_service.py" hem de
+# "from backend import wallet_service" şeklinde çalışır
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
 from config import RPC_URL, PRIVATE_KEY, CONTRACT_ADDRESS, ABI_PATH, CHAIN_ID
 
 
