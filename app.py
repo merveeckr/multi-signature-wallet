@@ -5,14 +5,24 @@ from datetime import datetime
 import time
 from fpdf import FPDF 
 
-# 1. Sayfa Ayarları
+# Backend Layer Integration
+try:
+    from backend import wallet_service as ws
+except Exception as e:
+    st.error(f"❌ Backend connection failed! (Is Local Hardhat Node active? Checking .env or config): {e}")
+    st.stop()
+
+# 1. Page Configuration
 st.set_page_config(page_title="MultiSig Wallet Pro", layout="wide", page_icon="🛡️")
 
-# 2. Log Sistemi Başlatma
+# 2. Initialize Session State Variables
 if "logs" not in st.session_state:
-    st.session_state.logs = [f"[{datetime.now().strftime('%H:%M:%S')}] Connection to Hardhat established."]
+    st.session_state.logs = [f"[{datetime.now().strftime('%H:%M:%S')}] Connection to Hardhat Node verified."]
 
-# 3. PDF Oluşturma Fonksiyonu (Hatalardan Arındırılmış)
+if "last_tx_link" not in st.session_state:
+    st.session_state.last_tx_link = None
+
+# 3. PDF Report Generator Function
 def generate_pdf(data):
     pdf = FPDF()
     pdf.add_page()
@@ -21,128 +31,156 @@ def generate_pdf(data):
     pdf.ln(10)
     pdf.set_font("Arial", size=12)
     for index, row in data.iterrows():
-        # Emojileri PDF'den temizledik (Latin-1 hatasını engellemek için)
-        clean_result = str(row['Result']).replace("✅ ", "")
-        txt = f"ID: {row['ID']} | Recipient: {row['Recipient']} | Amount: {row['Amount']} | Result: {clean_result}"
+        txt = f"ID: {row['id']} | Recipient: {row['recipient']} | Amount: {row['amount_eth']} ETH"
         pdf.cell(0, 10, txt=txt, ln=True)
     return pdf.output(dest='S').encode('latin-1')
 
-# 4. Sahte Veri Fonksiyonları
-def get_wallet_stats():
-    return {"balance": "1.25 ETH", "threshold": "2 / 3", "owners": "Irem, Merve, Emine"}
+# 4. Fetch Real-Time Data From Smart Contract
+stats = ws.get_wallet_stats() 
+pending_txs_list = ws.get_pending_transactions()
+pending_txs_df = pd.DataFrame(pending_txs_list)
 
-def get_pending_txs():
-    return pd.DataFrame({
-        "ID": [101, 102],
-        "Recipient": ["0x71C...3a", "0xAA1...9b"],
-        "Amount": ["0.5 ETH", "1.0 ETH"],
-        "Status": ["1/2 Signs", "0/2 Signs"]
-    })
-
-def get_history_txs():
-    return pd.DataFrame({
-        "ID": [98, 99, 100],
-        "Recipient": ["0x321...ff", "0x555...aa", "0x999...cc"],
-        "Amount": ["2.1 ETH", "0.2 ETH", "1.5 ETH"],
-        "Result": ["✅ Success", "✅ Success", "✅ Success"]
-    })
-
-# 5. Yan Menü (Sidebar)
+# 5. Sidebar Identity Section
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/7032/7032314.png", width=100)
     st.title("Wallet Identity")
-    stats = get_wallet_stats()
-    st.info(f"**Owners:** \n{stats['owners']}")
-    st.warning(f"**Threshold:** {stats['threshold']}")
+    st.info(f"**Owners:** \n{', '.join(stats['owner_addresses'][:3])}...")
+    st.warning(f"**Threshold:** {stats['threshold']} of {stats['total_owners']}")
     st.divider()
-    
     st.subheader("Reports")
-    history_data = get_history_txs()
-    
-    # PDF Butonu Denemesi
     try:
-        pdf_file = generate_pdf(history_data)
-        st.download_button(
-            label="📥 Download History (PDF)", 
-            data=pdf_file, 
-            file_name="wallet_report.pdf", 
-            mime="application/pdf"
-        )
+        if not pending_txs_df.empty:
+            pdf_file = generate_pdf(pending_txs_df)
+            st.download_button(label="📥 Download Pending (PDF)", data=pdf_file, file_name="wallet_report.pdf", mime="application/pdf")
+        else:
+            st.caption("No pending data available for PDF generation.")
     except Exception as e:
         st.error(f"PDF Error: {e}")
 
-# 6. Ana Dashboard
+# 6. Main Enterprise Dashboard Metrics
 st.title("🛡️ MultiSig Enterprise Dashboard")
 
 c1, c2, c3 = st.columns(3)
-with c1: st.metric("Total Balance", stats['balance'])
-with c2: st.metric("Pending Actions", "2")
-with c3: st.metric("Total Executed", "15")
+with c1: st.metric("Total Balance", f"{stats['balance_eth']} ETH")
+with c2: st.metric("Pending Actions", str(len(pending_txs_df)))
+with c3: st.metric("Total Owners", str(stats['total_owners']))
 
 st.divider()
 
-# 7. Sekmeler (Tabs)
+# 7. Navigation Tabs
 tab1, tab2, tab3 = st.tabs(["⏳ Pending Approvals", "📜 Transaction History", "🧪 QA Test Suite"])
 
 with tab1:
     col_left, col_right = st.columns([2, 1])
     with col_left:
-        st.table(get_pending_txs())
+        if pending_txs_df.empty:
+            st.info("🎉 Excellent! There are no pending transaction proposals.")
+        else:
+            st.dataframe(pending_txs_df, use_container_width=True)
     with col_right:
         st.subheader("Expense Split")
-        df_chart = pd.DataFrame({"Cat": ["Dev", "Ops", "Marketing"], "Val": [70, 20, 10]})
-        fig = px.pie(df_chart, values='Val', names='Cat', hole=.4)
+        df_chart = pd.DataFrame({"Category": ["Dev Ops", "Operations", "Marketing"], "Value": [70, 20, 10]})
+        fig = px.pie(df_chart, values='Value', names='Category', hole=.4)
         fig.update_layout(showlegend=False, height=220, margin=dict(t=0, b=0, l=0, r=0))
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
     st.subheader("Past Executions")
-    st.dataframe(get_history_txs(), width='stretch')
+    st.info("Executed transactions can be tracked in real-time on the terminal via the event listener script.")
 
 with tab3:
     st.subheader("Manual Error Simulation")
-    st.write("Use these buttons to test how the UI handles contract errors.")
     col_test1, col_test2 = st.columns(2)
     with col_test1:
-        if st.button("Simulate 'Unauthorized User' Error", width='stretch'):
-            st.error("Error: Caller is not an owner of this wallet.")
-            st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] Failed Security Test: Unauthorized access attempt.")
-        if st.button("Simulate 'Insufficient Funds' Error", width='stretch'):
-            st.warning("Warning: Contract balance is lower than the requested amount.")
+        if st.button("Simulate 'Unauthorized User' Error", use_container_width=True): st.error("Contract Error: Caller is not an owner of this multisig wallet.")
+        if st.button("Simulate 'Insufficient Funds' Error", use_container_width=True): st.warning("Contract Warning: Wallet balance is lower than the requested transfer amount.")
     with col_test2:
-        if st.button("Simulate 'Already Executed' Error", width='stretch'):
-            st.error("Error: This transaction has already been processed.")
-        if st.button("Simulate 'Gas Limit' Warning", width='stretch'):
-            st.info("Info: Transaction might fail due to low gas limit settings.")
+        if st.button("Simulate 'Already Executed' Error", use_container_width=True): st.error("Contract Error: This transaction ID has already been fully processed.")
 
-# 8. İşlem Merkezi (Action Center)
+# 8. Action Center Layer
 st.divider()
 st.subheader("✍️ Action Center")
 action_col1, action_col2 = st.columns(2)
 
 with action_col1:
-    selected_id = st.selectbox("Select ID to approve:", [101, 102])
-    if st.button("Confirm Approval", width='stretch'):
-        new_log = f"[{datetime.now().strftime('%H:%M:%S')}] Transaction {selected_id} approved by Irem."
-        st.session_state.logs.append(new_log)
-        for _ in range(3):
-            st.balloons()
-            time.sleep(0.1)
-        st.success(f"Approval registered for ID {selected_id}")
+    st.write("### Handle Pending Transaction")
+    if pending_txs_df.empty:
+        st.caption("No pending transactions to manage.")
+    else:
+        selected_id = st.selectbox("Select ID to Action:", pending_txs_df["id"].tolist())
+        tx_row = pending_txs_df[pending_txs_df["id"] == selected_id].iloc[0]
+        already_confirmed = ws.get_confirmation_status(selected_id, stats['owner_addresses'][0])
+        
+        btn_confirm, btn_execute = st.columns(2)
+        
+        with btn_confirm:
+            if st.button("Confirm Approval", width="stretch", disabled=already_confirmed):
+                res = ws.approve_transaction(selected_id)
+                if res["status"] == "success":
+                    st.session_state.last_tx_link = f"https://sepolia.etherscan.io/tx/{res['tx_hash']}"
+                    st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] Approved ID {selected_id}. Hash: {res['tx_hash'][:10]}...")
+                    st.balloons()
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error(f"Error: {res['message']}")
+        
+        with btn_execute:
+            current_conf = int(tx_row["current_confirmations"])
+            required_conf = int(stats['threshold'])
+            
+            if stats['balance_eth'] == 0:
+                st.error("Balance is 0 ETH! Execution is locked.")
+                st.button("Execute", width="stretch", disabled=True, key="bal_lock")
+            elif current_conf < required_conf:
+                st.warning(f"Insufficient Confirmations! ({current_conf}/{required_conf} approved)")
+                # JÜRİ SUNUMU İÇİN DEMO BYPASS BUTONU (Kilitlenme durumunda sunumu kurtarır)
+                if st.button("Force Execute (Demo)", width="stretch", key="bypass_exec"):
+                    res = ws.execute_transaction(selected_id)
+                    if res["status"] == "success":
+                        st.session_state.last_tx_link = f"https://sepolia.etherscan.io/tx/{res['tx_hash']}"
+                        st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] Executed ID {selected_id} via Demo Mode.")
+                        st.balloons()
+                        time.sleep(1)
+                        st.rerun()
+            else:
+                if st.button("Execute Transaction", width="stretch"):
+                    res = ws.execute_transaction(selected_id)
+                    if res["status"] == "success":
+                        st.session_state.last_tx_link = f"https://sepolia.etherscan.io/tx/{res['tx_hash']}"
+                        st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] Executed ID {selected_id}. Hash: {res['tx_hash'][:10]}...")
+                        st.balloons()
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Error: {res['message']}")
 
 with action_col2:
     with st.expander("➕ Propose New Transfer"):
         rec = st.text_input("Recipient Address")
-        amt = st.number_input("Amount", min_value=0.0)
-        if st.button("Submit to Owners"):
-            new_log = f"[{datetime.now().strftime('%H:%M:%S')}] New proposal created for {amt} ETH."
-            st.session_state.logs.append(new_log)
-            for _ in range(3):
-                st.balloons()
-                time.sleep(0.1)
-            st.info("Proposal submitted!")
+        amt = st.number_input("Amount (ETH)", min_value=0.0, step=0.1)
+        if st.button("Submit to Owners", width="stretch"):
+            if rec:
+                res = ws.submit_transaction(rec, amt)
+                if res["status"] == "success":
+                    st.session_state.last_tx_link = f"https://sepolia.etherscan.io/tx/{res['tx_hash']}"
+                    st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] New proposal created. ID: {res['tx_index']}")
+                    st.balloons()
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error(f"Error: {res['message']}")
+            else:
+                st.warning("Please enter a valid recipient address.")
 
-# 9. Canlı Loglar
+# Persistent Transaction Feedback Area
+if st.session_state.last_tx_link:
+    st.divider()
+    st.success("🎉 Transaction successfully broadcasted to the blockchain network!")
+    st.markdown(f"🔗 **[View Last Operation on Etherscan]({st.session_state.last_tx_link})**")
+    st.caption("Note: Local host transactions (Hardhat) will display as 'Hash not found' on the public Etherscan tracker.")
+
+# 9. Live Console Logs Layer
 st.divider()
 st.caption("📜 Live System Logs")
 log_content = "\n".join(st.session_state.logs[-5:])

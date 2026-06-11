@@ -1,0 +1,7 @@
+﻿node_modules/
+venv/
+.env
+artifacts/
+cache/
+.streamlit/
+__pycache__/
