@@ -14,9 +14,9 @@
 import os
 from dotenv import load_dotenv
 
-# .env dosyasını oku ve ortam değişkenlerine yükle
-# load_dotenv() çağrılmazsa os.getenv() hiçbir şey bulamaz
-load_dotenv()
+# .env dosyasını oku — proje kökündeki .env'yi bul
+_project_root = os.path.join(os.path.dirname(__file__), "..", "..")
+load_dotenv(os.path.join(_project_root, ".env"))
 
 # ── Blockchain Bağlantısı ─────────────────────────────────
 # RPC_URL: Python'un blockchain'e konuştuğu adres
@@ -57,7 +57,8 @@ CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS")
 # ABI dosyasının yolu — Hardhat'ın derlediği artifact dosyası
 # abi/ klasörü boş, gerçek ABI artifacts/ içinde
 ABI_PATH = os.path.join(
-    os.path.dirname(__file__),              # backend/ klasörü
+    os.path.dirname(__file__),              # irem/backend/ klasörü
+    "..",                                    # irem/
     "..",                                    # proje kökü
     "artifacts", "contracts",               # Hardhat artifact klasörü
     "MultiSigWallet.sol",                   # kontrat dosyası adı

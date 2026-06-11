@@ -42,7 +42,7 @@ with open(ABI_PATH) as f:
 # Kontrat nesnesini oluştur
 # Bu nesne üzerinden contract.functions.xxx() şeklinde çağrı yaparız
 contract = w3.eth.contract(
-    address=Web3.to_checksum_address("0x5FbDB2315678afecb367f032d93F642f64180aa3"),
+    address=Web3.to_checksum_address(CONTRACT_ADDRESS),
     abi=abi
 )
 
@@ -76,17 +76,13 @@ def _send_tx(fn):
         signed = account.sign_transaction(tx)
 
         # İmzalı işlemi blockchain'e gönder
-        tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
 
         # İşlemin onaylanmasını bekle
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         return receipt
     except Exception:
-        # Sunum esnasında ağ hatası alınırsa simüle makbuz döndür
-        class MockReceipt:
-            def __init__(self):
-                self.transactionHash = Web3.to_bytes(hexstr="0x6aa058c97efdb5429f7fccb9f02b85cae92b03ddaeed06f73d2141c946e4b69e")
-        return MockReceipt()
+        raise
 
 
 # ── FONKSİYON 1: Cüzdan Genel Bilgileri ──────────────────
@@ -104,30 +100,19 @@ def get_wallet_stats():
     Blockchain'e sadece "okuma" isteği gönderir → gas ödemez.
     (Sadece veri değiştiren işlemler gas öder)
     """
-    try:
-        # Kontratın bakiyesini wei cinsinden al
-        balance_wei = w3.eth.get_balance(
-            Web3.to_checksum_address("0x5FbDB2315678afecb367f032d93F642f64180aa3")
-        )
-        balance_eth = float(w3.from_wei(balance_wei, "ether"))
-        threshold = contract.functions.numConfirmationsRequired().call()
-        owners = contract.functions.getOwners().call()
-    except Exception:
-        # JÜRİ KORUMA KALKANI: Eğer Hardhat deploy hatası varsa çökme, sunum verilerini bas!
-        balance_eth = 5.0
-        threshold = 2
-        owners = [
-            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-            "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
-            "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"
-        ]
+    balance_wei = w3.eth.get_balance(
+        Web3.to_checksum_address(CONTRACT_ADDRESS)
+    )
+    balance_eth = float(w3.from_wei(balance_wei, "ether"))
+    threshold = contract.functions.numConfirmationsRequired().call()
+    owners = contract.functions.getOwners().call()
 
     return {
-        "balance_eth":      balance_eth,       # örn: 1.25
-        "threshold":        threshold,          # örn: 2
-        "total_owners":      len(owners),        # örn: 3
-        "owner_addresses":  owners,             # örn: ["0x...", ...]
-        "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",   # örn: "0x..."
+        "balance_eth":      balance_eth,
+        "threshold":        threshold,
+        "total_owners":     len(owners),
+        "owner_addresses":  owners,
+        "contract_address": CONTRACT_ADDRESS,
     }
 
 
@@ -161,23 +146,10 @@ def get_pending_transactions():
                 "is_executable":         is_executable,
             })
         
-        # Eğer canlı ağda henüz bekleyen işlem yoksa sunum için simüle et
-        if not pending:
-            raise ValueError("No transaction found")
-            
         return pending
 
-    except Exception:
-        # JÜRİ KORUMA KALKANI: Kilitlenen 5 nolu işlemi arayüzde canlandırır
-        return [
-            {
-                "id":                    5,
-                "recipient":             "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
-                "amount_eth":            1.5,
-                "current_confirmations": 1,
-                "is_executable":         False,
-            }
-        ]
+    except Exception as e:
+        raise
 
 
 # ── FONKSİYON 3: İşlem Onaylama ──────────────────────────
@@ -317,16 +289,13 @@ def encode_management_call(function_name: str, *args):
             f"Desteklenenler: {desteklenen}"
         )
 
-    try:
-        fn = getattr(contract.functions, function_name)
-        encoded = fn(*args).build_transaction({
-            "from": account.address,
-            "gas": 0,
-            "chainId": CHAIN_ID,
-            "nonce": 0,
-        })["data"]
-    except Exception:
-        encoded = b"0xmockencodeddata"
+    fn = getattr(contract.functions, function_name)
+    encoded = fn(*args).build_transaction({
+        "from": account.address,
+        "gas": 0,
+        "chainId": CHAIN_ID,
+        "nonce": 0,
+    })["data"]
 
     print(f"[encode_management_call] {function_name}{args}")
     print(f"   Encoded: {str(encoded)[:20]}...({len(encoded)} byte)")

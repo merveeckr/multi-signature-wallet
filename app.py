@@ -9,7 +9,7 @@ from fpdf import FPDF
 try:
     from backend import wallet_service as ws
 except Exception as e:
-    st.error(f"❌ Backend connection failed! (Is Local Hardhat Node active? Checking .env or config): {e}")
+    st.error(f"❌ Backend bağlantısı başarısız! (.env dosyasını ve Sepolia RPC bağlantısını kontrol et): {e}")
     st.stop()
 
 # 1. Page Configuration
@@ -17,7 +17,7 @@ st.set_page_config(page_title="MultiSig Wallet Pro", layout="wide", page_icon="�
 
 # 2. Initialize Session State Variables
 if "logs" not in st.session_state:
-    st.session_state.logs = [f"[{datetime.now().strftime('%H:%M:%S')}] Connection to Hardhat Node verified."]
+    st.session_state.logs = [f"[{datetime.now().strftime('%H:%M:%S')}] Sepolia testnet bağlantısı kuruldu."]
 
 if "last_tx_link" not in st.session_state:
     st.session_state.last_tx_link = None
@@ -36,8 +36,16 @@ def generate_pdf(data):
     return pdf.output(dest='S').encode('latin-1')
 
 # 4. Fetch Real-Time Data From Smart Contract
-stats = ws.get_wallet_stats() 
-pending_txs_list = ws.get_pending_transactions()
+try:
+    stats = ws.get_wallet_stats()
+except Exception as e:
+    st.error(f"Kontrat verisi alınamadı: {e}")
+    st.stop()
+
+try:
+    pending_txs_list = ws.get_pending_transactions()
+except Exception as e:
+    pending_txs_list = []
 pending_txs_df = pd.DataFrame(pending_txs_list)
 
 # 5. Sidebar Identity Section
@@ -78,11 +86,16 @@ with tab1:
         else:
             st.dataframe(pending_txs_df, use_container_width=True)
     with col_right:
-        st.subheader("Expense Split")
-        df_chart = pd.DataFrame({"Category": ["Dev Ops", "Operations", "Marketing"], "Value": [70, 20, 10]})
-        fig = px.pie(df_chart, values='Value', names='Category', hole=.4)
-        fig.update_layout(showlegend=False, height=220, margin=dict(t=0, b=0, l=0, r=0))
-        st.plotly_chart(fig, use_container_width=True)
+        st.subheader("Approval Status")
+        confirmed_count = sum(1 for tx in pending_txs_list if tx["current_confirmations"] >= stats["threshold"])
+        waiting_count = len(pending_txs_list) - confirmed_count
+        if pending_txs_list:
+            df_chart = pd.DataFrame({"Status": ["Ready to Execute", "Awaiting Confirmations"], "Value": [confirmed_count or 0, waiting_count or 0]})
+            fig = px.pie(df_chart, values='Value', names='Status', hole=.4)
+            fig.update_layout(showlegend=False, height=220, margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.caption("No pending transactions.")
 
 with tab2:
     st.subheader("Past Executions")
@@ -134,15 +147,7 @@ with action_col1:
                 st.button("Execute", width="stretch", disabled=True, key="bal_lock")
             elif current_conf < required_conf:
                 st.warning(f"Insufficient Confirmations! ({current_conf}/{required_conf} approved)")
-                # JÜRİ SUNUMU İÇİN DEMO BYPASS BUTONU (Kilitlenme durumunda sunumu kurtarır)
-                if st.button("Force Execute (Demo)", width="stretch", key="bypass_exec"):
-                    res = ws.execute_transaction(selected_id)
-                    if res["status"] == "success":
-                        st.session_state.last_tx_link = f"https://sepolia.etherscan.io/tx/{res['tx_hash']}"
-                        st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] Executed ID {selected_id} via Demo Mode.")
-                        st.balloons()
-                        time.sleep(1)
-                        st.rerun()
+                st.button("Execute Transaction", width="stretch", disabled=True, key="conf_lock")
             else:
                 if st.button("Execute Transaction", width="stretch"):
                     res = ws.execute_transaction(selected_id)
@@ -178,7 +183,7 @@ if st.session_state.last_tx_link:
     st.divider()
     st.success("🎉 Transaction successfully broadcasted to the blockchain network!")
     st.markdown(f"🔗 **[View Last Operation on Etherscan]({st.session_state.last_tx_link})**")
-    st.caption("Note: Local host transactions (Hardhat) will display as 'Hash not found' on the public Etherscan tracker.")
+    st.caption("Not: İşlem Sepolia testnet üzerinde yayınlandı. Onaylanması ~15 saniye sürebilir.")
 
 # 9. Live Console Logs Layer
 st.divider()
