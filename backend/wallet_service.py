@@ -48,34 +48,20 @@ contract = w3.eth.contract(
 
 
 # ── Yardımcı Fonksiyon ────────────────────────────────────
-def _send_tx(fn):
+def _send_tx(fn, private_key: str = None):
     """
     Bir kontrat fonksiyonunu blockchain'e gönderir.
-
-    Neden bu fonksiyon var?
-    confirmTransaction, executeTransaction gibi her işlem için
-    aynı adımları tekrar tekrar yazmak yerine buraya topladık.
-
-    Adımlar:
-    1. İşlemi oluştur (build_transaction)
-    2. Private key ile imzala (sign_transaction)
-    3. Blockchain'e gönder (send_raw_transaction)
-    4. İşlemin tamamlanmasını bekle (wait_for_transaction_receipt)
-    5. Makbuzu (receipt) döndür — içinde tx_hash var
+    private_key verilirse o hesap kullanılır, verilmezse modül düzeyindeki account.
     """
     try:
-        # İşlemi oluştur: from, nonce, gas, chainId gerekli
+        act = w3.eth.account.from_key(private_key) if private_key else account
         tx = fn.build_transaction({
-            "from": account.address,
-            "nonce": w3.eth.get_transaction_count(account.address),
+            "from": act.address,
+            "nonce": w3.eth.get_transaction_count(act.address),
             "gas": 300000,
             "chainId": CHAIN_ID,
         })
-
-        # İşlemi private key ile imzala
-        signed = account.sign_transaction(tx)
-
-        # İmzalı işlemi blockchain'e gönder
+        signed = act.sign_transaction(tx)
         tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
 
         # İşlemin onaylanmasını bekle
@@ -129,7 +115,7 @@ def get_pending_transactions():
         pending = []
 
         for i in range(total):
-            to, value, data, executed, num_confirmations = \
+            to, value, _, executed, num_confirmations = \
                 contract.functions.getTransaction(i).call()
 
             if executed:
@@ -148,18 +134,19 @@ def get_pending_transactions():
         
         return pending
 
-    except Exception as e:
+    except Exception:
         raise
 
 
 # ── FONKSİYON 3: İşlem Onaylama ──────────────────────────
-def approve_transaction(transaction_id: int):
+def approve_transaction(transaction_id: int, private_key: str = None):
     """
     Verilen ID'li işlemi onaylar.
     """
     try:
         receipt = _send_tx(
-            contract.functions.confirmTransaction(transaction_id)
+            contract.functions.confirmTransaction(transaction_id),
+            private_key=private_key,
         )
         return {
             "status":  "success",
@@ -173,7 +160,7 @@ def approve_transaction(transaction_id: int):
     
 
 # ── FONKSİYON 4: İşlem Teklifi Oluşturma ─────────────────
-def submit_transaction(to: str, amount_eth: float, data: bytes = b""):
+def submit_transaction(to: str, amount_eth: float, data: bytes = b"", private_key: str = None):
     """
     Yeni bir işlem teklifi oluşturur ve pending listeye ekler.
     """
@@ -182,7 +169,8 @@ def submit_transaction(to: str, amount_eth: float, data: bytes = b""):
         to_address = Web3.to_checksum_address(to)
 
         receipt = _send_tx(
-            contract.functions.submitTransaction(to_address, amount_wei, data)
+            contract.functions.submitTransaction(to_address, amount_wei, data),
+            private_key=private_key,
         )
 
         tx_index = None
@@ -206,13 +194,14 @@ def submit_transaction(to: str, amount_eth: float, data: bytes = b""):
 
 
 # ── FONKSİYON 5: İşlemi Yürütme ──────────────────────────
-def execute_transaction(transaction_id: int):
+def execute_transaction(transaction_id: int, private_key: str = None):
     """
     Yeterli onay alan bir işlemi gerçekten yürütür (parayı gönderir).
     """
     try:
         receipt = _send_tx(
-            contract.functions.executeTransaction(transaction_id)
+            contract.functions.executeTransaction(transaction_id),
+            private_key=private_key,
         )
         return {
             "status":  "success",
@@ -226,13 +215,14 @@ def execute_transaction(transaction_id: int):
 
 
 # ── FONKSİYON 6: Onay Geri Çekme ─────────────────────────
-def revoke_confirmation(transaction_id: int):
+def revoke_confirmation(transaction_id: int, private_key: str = None):
     """
     Daha önce verilen onayı geri çeker.
     """
     try:
         receipt = _send_tx(
-            contract.functions.revokeConfirmation(transaction_id)
+            contract.functions.revokeConfirmation(transaction_id),
+            private_key=private_key,
         )
         return {
             "status":  "success",
@@ -246,6 +236,13 @@ def revoke_confirmation(transaction_id: int):
 
 
 # ── FONKSİYON 7: Onay Durumu Sorgula ─────────────────────
+def get_active_address(private_key: str = None) -> str:
+    """Aktif hesabın adresini döner. Key verilmezse .env'deki varsayılan kullanılır."""
+    if private_key:
+        return w3.eth.account.from_key(private_key).address
+    return account.address
+
+
 def get_confirmation_status(transaction_id: int, owner_address: str):
     """
     Belirli bir sahibin belirli bir işlemi onaylayıp onaylamadığını döner.
