@@ -259,6 +259,23 @@ with tab1:
         else:
             st.caption("No pending transactions.")
 
+    if pending_txs_list:
+        st.markdown("#### Kim Onayladi?")
+        owner_addrs = stats["owner_addresses"]
+        confirm_rows = []
+        for tx in pending_txs_list:
+            row = {
+                "TX #": tx["id"],
+                "Alici": tx["recipient"][:10] + "...",
+                "Miktar (ETH)": tx["amount_eth"],
+            }
+            for addr in owner_addrs:
+                label = f"{addr[:6]}...{addr[-4:]}"
+                confirmed = ws.get_confirmation_status(tx["id"], addr)
+                row[label] = "✓" if confirmed else "✗"
+            confirm_rows.append(row)
+        st.dataframe(pd.DataFrame(confirm_rows), use_container_width=True, hide_index=True)
+
 with tab2:
     st.subheader("Past Executions")
     st.info("Executed transactions can be tracked in real-time on Etherscan.")
@@ -296,7 +313,7 @@ else:
             tx_row = pending_txs_df[pending_txs_df["id"] == selected_id].iloc[0]
             already_confirmed = ws.get_confirmation_status(selected_id, active_address)
 
-            btn_confirm, btn_execute = st.columns(2)
+            btn_confirm, btn_revoke, btn_execute = st.columns(3)
 
             with btn_confirm:
                 if st.button("Confirm Approval", width="stretch", disabled=already_confirmed):
@@ -309,6 +326,21 @@ else:
                         fetch_stats.clear()
                         fetch_pending.clear()
                         st.balloons()
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Error: {res['message']}")
+
+            with btn_revoke:
+                if st.button("Revoke Approval", width="stretch", disabled=not already_confirmed):
+                    res = ws.revoke_confirmation(selected_id, private_key=active_key)
+                    if res["status"] == "success":
+                        st.session_state.last_tx_link = f"https://sepolia.etherscan.io/tx/{res['tx_hash']}"
+                        st.session_state.logs.append(
+                            f"[{datetime.now().strftime('%H:%M:%S')}] Revoked ID {selected_id}. Hash: {res['tx_hash'][:10]}..."
+                        )
+                        fetch_stats.clear()
+                        fetch_pending.clear()
                         time.sleep(1)
                         st.rerun()
                     else:
