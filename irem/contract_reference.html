@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contract Referans — MultiSig Wallet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --m:#185FA5;--ml:#E6F1FB;--mb:#B5D4F4;
+  --e:#0F6E56;--el:#E1F5EE;--eb:#9FE1CB;
+  --i:#854F0B;--il:#FAEEDA;--ib:#FAC775;
+  --s:#534AB7;--sl:#EEEDFE;--sb:#CECBF6;
+  --border:#E2E8F0;--bg:#F8FAFC;--text:#1A202C;--muted:#718096;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:2rem;max-width:1100px;margin:0 auto}
+h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
+.legend{display:flex;gap:16px;margin-bottom:1.5rem;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%}
+
+/* ARCH BOX */
+.arch{background:#fff;border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+.arch h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.arch-diagram{background:#F1F5F9;border-radius:8px;padding:1rem 1.25rem;font-family:'Courier New',monospace;font-size:12px;line-height:1.8;color:#334155}
+.arch-note{font-size:12px;color:var(--muted);margin-top:.75rem;line-height:1.6}
+
+/* DEPLOY BOX */
+.deploy-box{background:var(--sl);border:1px solid var(--sb);border-radius:8px;padding:.75rem 1rem;margin-top:.75rem;font-size:12px;color:var(--s);line-height:1.6}
+.deploy-box strong{color:#3730A3}
+
+/* SECTION */
+.section{margin-bottom:1.5rem}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.section-line{flex:1;height:1px;background:var(--border)}
+
+/* CARDS GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem}
+.card.merve{border-left:3px solid var(--m)}
+.card.emine{border-left:3px solid var(--e)}
+.card.irem{border-left:3px solid var(--i)}
+.card.shared{border-left:3px solid var(--s)}
+
+.card-title{font-size:13px;font-weight:600;margin-bottom:.6rem;display:flex;align-items:center;gap:6px}
+.badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px}
+.badge-m{background:var(--mb);color:var(--m)}
+.badge-e{background:var(--eb);color:var(--e)}
+.badge-i{background:var(--ib);color:var(--i)}
+.badge-s{background:var(--sb);color:var(--s)}
+
+/* CODE BLOCKS */
+pre{background:#F1F5F9;border-radius:6px;padding:.75rem 1rem;font-family:'Courier New',monospace;font-size:11px;line-height:1.7;overflow-x:auto;margin:.5rem 0;color:#1E293B}
+.kw{color:#7C3AED}
+.fn{color:#0369A1}
+.ty{color:#0F766E}
+.cm{color:#94A3B8;font-style:italic}
+.ev{color:#B45309}
+
+/* PARAM TABLE */
+table{width:100%;border-collapse:collapse;font-size:11px;margin:.5rem 0}
+th{text-align:left;font-weight:600;padding:5px 8px;background:#F1F5F9;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+td code{background:#F1F5F9;padding:1px 4px;border-radius:3px;font-family:'Courier New',monospace;font-size:10.5px}
+tr:last-child td{border-bottom:none}
+
+/* STATUS */
+.status{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;margin:1px 2px}
+.ok{background:#DCFCE7;color:#166534}
+.warn{background:#FEF9C3;color:#854D0E}
+.no{background:#FEE2E2;color:#991B1B}
+
+/* NOTE */
+.note{font-size:11px;color:var(--muted);background:#F8FAFC;border:1px solid var(--border);border-radius:6px;padding:6px 10px;margin-top:.5rem;line-height:1.6}
+.note strong{color:var(--text)}
+
+/* EVENT LIST */
+.ev-list{list-style:none;font-size:11px;line-height:1.9}
+.ev-list li{padding-left:12px;position:relative;color:#334155}
+.ev-list li::before{content:'⬡';position:absolute;left:0;color:var(--s);font-size:9px;top:2px}
+.ev-list .ev-name{font-family:'Courier New',monospace;font-weight:600;color:var(--ev)}
+.ev-list .ev-desc{color:var(--muted);margin-left:4px}
+
+/* MODIFIER LIST */
+.mod-list{list-style:none;font-size:11px;line-height:1.9}
+.mod-list li{padding-left:12px;position:relative}
+.mod-list li::before{content:'→';position:absolute;left:0;color:var(--muted)}
+
+/* REVERT TABLE */
+.rv{font-family:'Courier New',monospace;font-size:10px;color:#991B1B;background:#FEF2F2;padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<h1>Multi-Signature Wallet — Contract Referans Dokümanı</h1>
+<p class="subtitle">COM 4532 · Merve Çakır · Emine & İrem için teknik referans · 15 Mayıs 2026</p>
+
+<div class="legend">
+  <div class="leg"><div class="dot" style="background:var(--m)"></div>Merve — Smart Contract</div>
+  <div class="leg"><div class="dot" style="background:var(--e)"></div>Emine — Web3.py Backend</div>
+  <div class="leg"><div class="dot" style="background:var(--i)"></div>İrem — Test & UI</div>
+</div>
+
+<!-- MİMARİ -->
+<div class="arch">
+  <h2>Mimari — Nasıl Çalışıyor?</h2>
+  <div class="arch-diagram">MultiSigWallet  <span style="color:#94A3B8">← TEK deploy edilen contract (Hardhat ile)</span>
+  ├── is ReentrancyGuard      <span style="color:#94A3B8">← OpenZeppelin (reentrancy koruması)</span>
+  ├── is OwnerManager         <span style="color:#94A3B8">← abstract — sahip yönetimi fonksiyonları</span>
+  └── is TransactionManager   <span style="color:#94A3B8">← abstract — tx yaşam döngüsü + events</span></div>
+  <div class="arch-note">
+    <strong>OwnerManager.sol</strong> ve <strong>TransactionManager.sol</strong> ayrı deploy <u>edilmez</u>.
+    Bunlar MultiSigWallet'ın içine gömülü. Emine sadece <strong>MultiSigWallet ABI</strong>'sini kullanır.
+  </div>
+  <div class="deploy-box">
+    <strong>Deploy:</strong> sadece <code>MultiSigWallet(address[] owners, uint256 numConfirmationsRequired)</code><br>
+    <strong>ABI:</strong> <code>abi/MultiSigWallet.abi.json</code> &nbsp;·&nbsp;
+    <strong>Kural:</strong> M &ge; N/2 &nbsp;(örn: 3 sahip → en az 2 onay zorunlu)
+  </div>
+</div>
+
+<!-- CONSTRUCTOR -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Constructor</span><div class="section-line"></div></div>
+  <div class="grid-2">
+    <div class="card merve">
+      <div class="card-title"><span class="badge badge-m">Merve yazdı</span> MultiSigWallet constructor</div>
+      <pre><span class="kw">constructor</span>(
+    <span class="ty">address[]</span> memory _owners,
+    <span class="ty">uint256</span>   _numConfirmationsRequired
+)</pre>
+      <table>
+        <tr><th>Parametre</th><th>Tip</th><th>Açıklama</th></tr>
+        <tr><td><code>_owners</code></td><td><code>address[] memory</code></td><td>N adet yetkili sahip adresi</td></tr>
+        <tr><td><code>_numConfirmationsRequired</code></td><td><code>uint256</code></td><td>Gereken min. onay sayısı (M)</td></tr>
+      </table>
+      <div class="note"><strong>Hard-coded kural:</strong> M * 2 &ge; N &nbsp;(M &ge; N/2). Bozulursa revert atar.</div>
+    </div>
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine kullanır</span> Python deploy örneği</div>
+      <pre><span class="cm"># wallet_service.py içinde</span>
+owners = [addr1, addr2, addr3]
+M = 2  <span class="cm"># 2-of-3</span>
+
+contract = w3.eth.contract(
+    abi=MULTISIG_ABI,
+    bytecode=MULTISIG_BIN
+)
+tx = contract.constructor(owners, M)\
+    .transact({'from': deployer})</pre>
+      <div class="note"><strong>ABI dosyası:</strong> <code>abi/MultiSigWallet.abi.json</code></div>
+    </div>
+  </div>
+</div>
+
+<!-- CORE FONKSİYONLAR -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Core Fonksiyonlar — İşlem Akışı</span><div class="section-line"></div></div>
+  <div class="grid-3">
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine çağırır</span> submitTransaction</div>
+      <pre><span class="kw">function</span> <span class="fn">submitTransaction</span>(
+    <span class="ty">address</span> _to,
+    <span class="ty">uint256</span> _value,
+    <span class="ty">bytes</span> memory _data
+) <span class="kw">public</span>
+  nonReentrant
+  <span class="kw">returns</span> (<span class="ty">uint256</span> txIndex)</pre>
+      <div class="note">Sadece sahipler çağırabilir. txIndex döndürür — pending listeye ekler. <code>_data</code> ETH transferinde boş bytes gönderilebilir.</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine çağırır</span> confirmTransaction</div>
+      <pre><span class="kw">function</span> <span class="fn">confirmTransaction</span>(
+    <span class="ty">uint256</span> _txIndex
+) <span class="kw">public</span>
+  nonReentrant
+  txExists(_txIndex)
+  notExecuted(_txIndex)
+  notConfirmed(_txIndex)</pre>
+      <div class="note">Onay sayacını artırır. Aynı sahip iki kez onaylayamaz (<code>notConfirmed</code> modifier).</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine çağırır</span> executeTransaction</div>
+      <pre><span class="kw">function</span> <span class="fn">executeTransaction</span>(
+    <span class="ty">uint256</span> _txIndex
+) <span class="kw">public</span>
+  nonReentrant
+  txExists(_txIndex)
+  notExecuted(_txIndex)</pre>
+      <div class="note">Onay sayısı M'e ulaşınca çağrılır. <code>executed = true</code> set edildikten <u>sonra</u> dış çağrı yapılır (CEI pattern).</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine çağırır</span> revokeConfirmation</div>
+      <pre><span class="kw">function</span> <span class="fn">revokeConfirmation</span>(
+    <span class="ty">uint256</span> _txIndex
+) <span class="kw">public</span>
+  txExists(_txIndex)
+  notExecuted(_txIndex)
+  alreadyConfirmed(_txIndex)</pre>
+      <div class="note">Sahip daha önce verdiği onayı geri çekebilir. Yürütülmüş tx'lerde çalışmaz.</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine okur</span> isConfirmed</div>
+      <pre><span class="kw">function</span> <span class="fn">isConfirmed</span>(
+    <span class="ty">uint256</span> _txIndex
+) <span class="kw">public view</span>
+  <span class="kw">returns</span> (<span class="ty">bool</span>)</pre>
+      <div class="note"><code>numConfirmations &ge; numConfirmationsRequired</code> ise <code>true</code> döner.</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine okur</span> getBalance</div>
+      <pre><span class="kw">function</span> <span class="fn">getBalance</span>()
+  <span class="kw">public view</span>
+  <span class="kw">returns</span> (<span class="ty">uint256</span>)</pre>
+      <div class="note">Cüzdan ETH bakiyesini wei cinsinden döndürür.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- QUERY FONKSİYONLAR -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Sorgu Fonksiyonları — UI & Backend</span><div class="section-line"></div></div>
+  <div class="grid-3">
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine & </span><span class="badge badge-i">İrem</span>&nbsp; getTransaction</div>
+      <pre><span class="kw">function</span> <span class="fn">getTransaction</span>(
+    <span class="ty">uint256</span> _txIndex
+) <span class="kw">public view returns</span> (
+    <span class="ty">address</span> to,
+    <span class="ty">uint256</span> value,
+    <span class="ty">bytes</span> memory data,
+    <span class="ty">bool</span>    executed,
+    <span class="ty">uint256</span> numConfirmations
+)</pre>
+      <div class="note">İrem: pending tx listesi için her txIndex'te bunu çağır.</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine</span> getTransactionCount</div>
+      <pre><span class="kw">function</span> <span class="fn">getTransactionCount</span>()
+  <span class="kw">public view</span>
+  <span class="kw">returns</span> (<span class="ty">uint256</span>)</pre>
+      <div class="note">Toplam tx sayısı. Loop için: <code>for i in range(getTransactionCount())</code></div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine</span> getConfirmationStatus</div>
+      <pre><span class="kw">function</span> <span class="fn">getConfirmationStatus</span>(
+    <span class="ty">uint256</span> _txIndex,
+    <span class="ty">address</span> _owner
+) <span class="kw">public view</span>
+  <span class="kw">returns</span> (<span class="ty">bool</span>)</pre>
+      <div class="note">Belirli sahibin belirli tx'i onaylayıp onaylamadığını döndürür. UI'daki "onayladı/onaylamadı" göstergesi için.</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine</span> getOwners</div>
+      <pre><span class="kw">function</span> <span class="fn">getOwners</span>()
+  <span class="kw">public view</span>
+  <span class="kw">returns</span> (<span class="ty">address[]</span> memory)</pre>
+      <div class="note">Tüm sahip listesini döndürür. Wallet dashboard için.</div>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine okur</span> State değişkenleri</div>
+      <pre><span class="cm">// Public — doğrudan okunabilir</span>
+contract.<span class="fn">isOwner</span>(address)       <span class="ty">→ bool</span>
+contract.<span class="fn">owners</span>(index)          <span class="ty">→ address</span>
+contract.<span class="fn">numConfirmationsRequired</span> <span class="ty">→ uint256</span>
+contract.<span class="fn">confirmed</span>(txIdx, addr) <span class="ty">→ bool</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- YÖNETİM FONKSİYONLARI -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Yönetim Fonksiyonları — Multisig Konsensüsüyle Çağrılır</span><div class="section-line"></div></div>
+  <div class="note" style="margin-bottom:.75rem;font-size:12px">
+    <strong>Dikkat:</strong> Bu fonksiyonlar dışarıdan doğrudan çağrılamaz. Önce <code>submitTransaction</code> ile teklif oluşturulur, M onay alındıktan sonra <code>executeTransaction</code> ile çağrılır (<code>_data</code> parametresi ABI-encoded fonksiyon çağrısı olur). Emine bu encoding'i <code>contract.encodeABI()</code> ile yapar.
+  </div>
+  <div class="grid-2">
+    <div class="card merve">
+      <div class="card-title"><span class="badge badge-m">OwnerManager'dan</span> addOwner / removeOwner / replaceOwner</div>
+      <pre><span class="fn">addOwner</span>(<span class="ty">address</span> owner)
+<span class="fn">removeOwner</span>(<span class="ty">address</span> owner)
+<span class="fn">replaceOwner</span>(<span class="ty">address</span> owner, <span class="ty">address</span> newOwner)</pre>
+      <div class="note">Hepsi <code>onlyWallet</code> modifier'lı. <code>validRequirement</code> modifier M &ge; N/2 kuralını korur.</div>
+    </div>
+    <div class="card merve">
+      <div class="card-title"><span class="badge badge-m">OwnerManager'dan</span> changeRequirement</div>
+      <pre><span class="fn">changeRequirement</span>(<span class="ty">uint256</span> _required)</pre>
+      <div class="note">Onay eşiğini günceller. Yine <code>onlyWallet</code> + <code>validRequirement</code> zorunlu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENTS -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Events — Emine dinler, İrem test eder</span><div class="section-line"></div></div>
+  <div class="grid-2">
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine dinler</span> İşlem Events</div>
+      <ul class="ev-list">
+        <li>
+          <span class="ev-name">SubmitTransaction</span>
+          <span class="ev-desc">(txIndex, submitter, to, value, data)</span>
+          <div class="note" style="margin:.3rem 0 .3rem 12px">Yeni pending tx geldiğinde. UI'da listeyi güncelle.</div>
+        </li>
+        <li>
+          <span class="ev-name">ConfirmTransaction</span>
+          <span class="ev-desc">(txIndex, confirmer, confirmationCount)</span>
+          <div class="note" style="margin:.3rem 0 .3rem 12px">Onay sayacı artınca. UI'daki sayaç için.</div>
+        </li>
+        <li>
+          <span class="ev-name">RevokeConfirmation</span>
+          <span class="ev-desc">(txIndex, revoker)</span>
+          <div class="note" style="margin:.3rem 0 .3rem 12px">Onay geri çekilince.</div>
+        </li>
+        <li>
+          <span class="ev-name">ExecuteTransaction</span>
+          <span class="ev-desc">(txIndex, executor)</span>
+          <div class="note" style="margin:.3rem 0 .3rem 12px">TX zincirde yürütülünce. Pending listeden kaldır.</div>
+        </li>
+        <li>
+          <span class="ev-name">Deposit</span>
+          <span class="ev-desc">(sender, amount, balance)</span>
+          <div class="note" style="margin:.3rem 0 0 12px">ETH yatırılınca. Bakiye widget'ı için.</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card emine">
+      <div class="card-title"><span class="badge badge-e">Emine dinler</span> Sahip Events</div>
+      <ul class="ev-list">
+        <li>
+          <span class="ev-name">OwnerAddition</span>
+          <span class="ev-desc">(owner)</span>
+          <div class="note" style="margin:.3rem 0 .3rem 12px">Yeni sahip eklendi. Sahip listesini yenile.</div>
+        </li>
+        <li>
+          <span class="ev-name">OwnerRemoval</span>
+          <span class="ev-desc">(owner)</span>
+          <div class="note" style="margin:.3rem 0 .3rem 12px">Sahip çıkarıldı veya değiştirildi.</div>
+        </li>
+        <li>
+          <span class="ev-name">RequirementChange</span>
+          <span class="ev-desc">(required)</span>
+          <div class="note" style="margin:.3rem 0 0 12px">M eşiği değişti. UI'daki threshold göstergesini güncelle.</div>
+        </li>
+      </ul>
+      <div class="note" style="margin-top:.75rem">
+        <strong>Web3.py event filter örneği:</strong><br>
+        <code>contract.events.SubmitTransaction.create_filter(fromBlock='latest')</code>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- REVERT MESAJLARI -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Revert Mesajları — İrem için (Test)</span><div class="section-line"></div></div>
+  <div class="card irem">
+    <div class="card-title"><span class="badge badge-i">İrem test eder</span> Beklenen revert mesajları</div>
+    <table>
+      <tr><th>Senaryo</th><th>Revert Mesajı</th><th>Test</th></tr>
+      <tr>
+        <td>M &lt; N/2 veya M=0</td>
+        <td><span class="rv">"MultiSigWallet: gecersiz M veya N degeri (M >= N/2 sarti)"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Boş owners dizisi</td>
+        <td><span class="rv">"MultiSigWallet: en az 1 sahip gerekli"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Tekrar eden sahip adresi</td>
+        <td><span class="rv">"MultiSigWallet: sahip adresi tekrarlanamaz"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>address(0) owner</td>
+        <td><span class="rv">"MultiSigWallet: sifir adres"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Sahip olmayan çağırır</td>
+        <td><span class="rv">"MultiSigWallet: sadece sahip cagirir"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Olmayan txIndex</td>
+        <td><span class="rv">"TransactionManager: islem bulunamadi"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Zaten yürütülmüş tx</td>
+        <td><span class="rv">"TransactionManager: islem zaten yurutuldu"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Aynı sahip 2 kez onaylar</td>
+        <td><span class="rv">"TransactionManager: zaten onaylanmis"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Yetersiz onay ile execute</td>
+        <td><span class="rv">"MultiSigWallet: yetersiz onay sayisi"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>Onayı olmayan revoke</td>
+        <td><span class="rv">"TransactionManager: onay bulunamadi"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+      <tr>
+        <td>addOwner direkt çağrılır (onlyWallet bypass)</td>
+        <td><span class="rv">"OwnerManager: sadece kontrat cagirabilir"</span></td>
+        <td><span class="status no">revert beklenir</span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- GÜVENLİK DURUMU -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Güvenlik Mekanizmaları — Mevcut Durum</span><div class="section-line"></div></div>
+  <div class="card shared">
+    <div class="card-title"><span class="badge badge-s">Ortak bilgi</span> Ne var, ne yok?</div>
+    <table>
+      <tr><th>Mekanizma</th><th>Durum</th><th>Detay</th></tr>
+      <tr><td>M &ge; N/2 hard-code</td><td><span class="status ok">✓ Var</span></td><td>Constructor + <code>validRequirement</code> modifier her owner işleminde de çalışır</td></tr>
+      <tr><td>ReentrancyGuard</td><td><span class="status ok">✓ Var</span></td><td><code>submit</code>, <code>confirm</code>, <code>execute</code> nonReentrant</td></tr>
+      <tr><td>CEI Pattern</td><td><span class="status ok">✓ Var</span></td><td><code>executed = true</code> set → sonra <code>.call{}</code></td></tr>
+      <tr><td>Duplikat onay engeli</td><td><span class="status ok">✓ Var</span></td><td><code>confirmed[txIndex][msg.sender]</code> mapping</td></tr>
+      <tr><td>Yürütülmüş tx koruması</td><td><span class="status ok">✓ Var</span></td><td><code>executed</code> flag + <code>notExecuted</code> modifier</td></tr>
+      <tr><td>Time-lock (24h/48h)</td><td><span class="status warn">⚠ Henüz yok</span></td><td>Hafta 2 görevi — büyük tutarlı tx için</td></tr>
+      <tr><td>emergencyPause</td><td><span class="status warn">⚠ Henüz yok</span></td><td>Hafta 2 görevi — kritik açık tespitinde durdurma</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ÖZET: KİM NE KULLANIYOR -->
+<div class="section">
+  <div class="section-header"><span class="section-label">Özet — Kim Ne Kullanıyor?</span><div class="section-line"></div></div>
+  <div class="grid-3">
+    <div class="card" style="background:var(--ml);border-color:var(--mb)">
+      <div class="card-title" style="color:var(--m)">Merve — Yazdı</div>
+      <ul class="mod-list" style="color:#1E3A5F">
+        <li>3 Solidity contract</li>
+        <li>Tüm fonksiyon imzaları</li>
+        <li>Tüm event tanımları</li>
+        <li>Güvenlik modifierleri</li>
+        <li>ABI dosyaları üretildi</li>
+        <li style="color:#854D0E">Time-lock → Hafta 2'de gelecek</li>
+        <li style="color:#854D0E">emergencyPause → Hafta 2'de gelecek</li>
+      </ul>
+    </div>
+    <div class="card" style="background:var(--el);border-color:var(--eb)">
+      <div class="card-title" style="color:var(--e)">Emine — Kullanır</div>
+      <ul class="mod-list" style="color:#0F3D2E">
+        <li><strong>ABI:</strong> <code>abi/MultiSigWallet.abi.json</code></li>
+        <li><strong>Deploy:</strong> <code>constructor(owners, M)</code></li>
+        <li><strong>Yazar:</strong> submitTransaction</li>
+        <li><strong>Yazar:</strong> confirmTransaction</li>
+        <li><strong>Yazar:</strong> executeTransaction</li>
+        <li><strong>Yazar:</strong> revokeConfirmation</li>
+        <li><strong>Okur:</strong> getTransaction, getOwners</li>
+        <li><strong>Dinler:</strong> tüm events (8 adet)</li>
+      </ul>
+    </div>
+    <div class="card" style="background:var(--il);border-color:var(--ib)">
+      <div class="card-title" style="color:var(--i)">İrem — Test Eder & UI</div>
+      <ul class="mod-list" style="color:#4A2506">
+        <li><strong>Test:</strong> tüm revert mesajları</li>
+        <li><strong>Test:</strong> 2-of-3, 3-of-5 senaryoları</li>
+        <li><strong>Test:</strong> duplikat onay → revert</li>
+        <li><strong>Test:</strong> yetersiz onay → execute revert</li>
+        <li><strong>Test:</strong> reentrancy simülasyonu</li>
+        <li><strong>UI:</strong> getTransaction → pending liste</li>
+        <li><strong>UI:</strong> getConfirmationStatus → onay göstergesi</li>
+        <li><strong>UI:</strong> ConfirmTransaction event → canlı güncelleme</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

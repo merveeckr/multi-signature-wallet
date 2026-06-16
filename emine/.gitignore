@@ -1,0 +1,15 @@
+# Gizli bilgiler — asla yükleme!
+.env
+
+# Büyük klasörler — gerek yok
+node_modules/
+venv/
+
+# Hardhat çıktıları
+artifacts/
+cache/
+abi/
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db

@@ -1,0 +1,15 @@
+# ── Blockchain & Web3 ─────────────────────────────────────────────────────────
+web3==7.16.0                # Ethereum node bağlantısı, contract çağrıları
+eth-account==0.13.7         # Private key yönetimi, işlem imzalama
+
+# ── Ortam & Konfigürasyon ─────────────────────────────────────────────────────
+python-dotenv==1.0.0        # .env dosyasından RPC_URL, PRIVATE_KEY okuma
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+streamlit==1.50.0           # Wallet dashboard UI
+plotly==6.7.0               # Pie chart (onay durumu grafiği)
+pandas==2.3.3               # DataFrame (işlem listesi)
+fpdf2==2.8.4                # PDF rapor oluşturma
+
+# ── Test ──────────────────────────────────────────────────────────────────────
+pytest==8.3.5               # Unit & integration test runner

@@ -1,0 +1,511 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --m:#185FA5;--ml:#E6F1FB;--mb:#B5D4F4;
+  --e:#0F6E56;--el:#E1F5EE;--eb:#9FE1CB;
+  --i:#854F0B;--il:#FAEEDA;--ib:#FAC775;
+  --s:#534AB7;--sl:#EEEDFE;--sb:#CECBF6;
+}
+body{font-family:var(--font-sans,sans-serif)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.hdr{padding:1.25rem 0 1rem;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem}
+.hdr h2{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.hdr p{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.legend{display:flex;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-sq{width:10px;height:10px;border-radius:2px}
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab{font-size:12px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);cursor:pointer;color:var(--color-text-secondary);background:transparent;transition:all .15s}
+.tab.on{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.phase{margin-bottom:1.75rem}
+.ph-hdr{display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.ph-lbl{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-tertiary);white-space:nowrap}
+.ph-line{flex:1;height:0.5px;background:var(--color-border-tertiary)}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.card{border-radius:8px;border:0.5px solid var(--color-border-tertiary);padding:10px 12px;transition:border-color .15s}
+.card:hover{border-color:var(--color-border-secondary)}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px}
+.days{font-size:10px;color:var(--color-text-tertiary)}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary);line-height:1.4;margin-bottom:6px}
+.card-list{font-size:11px;color:var(--color-text-secondary);line-height:1.65}
+.card-list li{list-style:none;padding-left:10px;position:relative}
+.card-list li::before{content:'–';position:absolute;left:0;color:var(--color-text-tertiary)}
+.mtx{margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)}
+.mtx-lbl{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin:1px 2px 1px 0}
+.shared-card{border-radius:8px;border:1.5px solid var(--sb);padding:12px 14px;margin-bottom:8px;background:var(--sl)}
+.shared-card.full{grid-column:span 3}
+.shared-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.shared-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:var(--sb);color:var(--s)}
+.shared-days{font-size:10px;color:var(--s)}
+.shared-title{font-size:13px;font-weight:500;color:var(--s);margin-bottom:6px}
+.shared-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px}
+.shared-col-title{font-size:11px;font-weight:500;margin-bottom:4px}
+.shared-list{font-size:11px;color:var(--color-text-secondary);line-height:1.65}
+.shared-list li{list-style:none;padding-left:10px;position:relative}
+.shared-list li::before{content:'·';position:absolute;left:0;color:var(--color-text-tertiary)}
+.dep-note{font-size:11px;color:var(--s);background:var(--sl);border:0.5px solid var(--sb);border-radius:6px;padding:6px 10px;margin-top:6px;line-height:1.5}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--color-border-tertiary)}
+.sum-card{padding:12px 14px;border-radius:8px}
+.sum-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.sum-role{font-size:11px;opacity:.8;margin-bottom:8px}
+.sum-list{font-size:11px;color:var(--color-text-secondary);line-height:1.7}
+.hidden{display:none!important}
+</style>
+
+<h2 class="sr-only">Multi-Signature Wallet projesi 4 haftalık iş haritası — bireysel ve ortak görevler</h2>
+
+<div class="hdr">
+  <h2>Multi-Signature Wallet — İş Haritası v2</h2>
+  <p>COM 4532 · Merve, Emine, İrem · 05 Mayıs – 01 Haziran 2026</p>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="dot" style="background:var(--m)"></div>Merve — Smart Contract & Güvenlik</div>
+  <div class="leg-item"><div class="dot" style="background:var(--e)"></div>Emine — Backend & Entegrasyon</div>
+  <div class="leg-item"><div class="dot" style="background:var(--i)"></div>İrem — Frontend & Test</div>
+  <div class="leg-item"><div class="dot-sq" style="background:var(--sb);border:1px solid var(--s)"></div>Ortak — 3 kişi birlikte</div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="show('all',this)">Tümü</button>
+  <button class="tab" onclick="show('1',this)">Hafta 1</button>
+  <button class="tab" onclick="show('2',this)">Hafta 2</button>
+  <button class="tab" onclick="show('3',this)">Hafta 3</button>
+  <button class="tab" onclick="show('4',this)">Hafta 4</button>
+</div>
+
+<!-- ===== HAFTA 1 ===== -->
+<div class="phase" data-ph="1">
+  <div class="ph-hdr"><span class="ph-lbl">Hafta 1 · 05–11 Mayıs · Kurulum & Mimari tasarım</span><div class="ph-line"></div></div>
+
+  <div style="margin-bottom:8px">
+    <div class="shared-card">
+      <div class="shared-hdr">
+        <span class="shared-badge">Ortak · 05 Mayıs (Pazartesi)</span>
+        <span class="shared-days">~2 saat · Kickoff toplantısı</span>
+      </div>
+      <div class="shared-title">Interface sözleşmesi toplantısı — en kritik adım</div>
+      <div class="shared-cols">
+        <div>
+          <div class="shared-col-title" style="color:var(--m)">Merve'nin paylaşacakları</div>
+          <ul class="shared-list">
+            <li>3 contract'ın fonksiyon imzaları</li>
+            <li>Event tanımları ve parametreleri</li>
+            <li>Constructor parametreleri</li>
+          </ul>
+        </div>
+        <div>
+          <div class="shared-col-title" style="color:var(--e)">Emine'nin paylaşacakları</div>
+          <ul class="shared-list">
+            <li>Python servis fonksiyon isimleri</li>
+            <li>Config dosyası yapısı</li>
+            <li>Event listener callback imzaları</li>
+          </ul>
+        </div>
+        <div>
+          <div class="shared-col-title" style="color:var(--i)">İrem'in paylaşacakları</div>
+          <ul class="shared-list">
+            <li>Streamlit sayfa yapısı kararı</li>
+            <li>UI'ın hangi servisi çağıracağı</li>
+            <li>Test klasör & dosya isimlendirme</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dep-note">Bu toplantıdan sonra 3'ünüz birbirini beklemeden paralel çalışmaya başlar. Toplantı yapılmazsa hafta 2'de entegrasyon çakışmaları olur.</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="background:var(--ml);border-color:var(--mb)">
+      <div class="card-meta"><span class="badge" style="background:var(--mb);color:var(--m)">Merve</span><span class="days">05–11 Mayıs</span></div>
+      <div class="card-title">Solidity ortam kurulumu + 3 contract iskelet</div>
+      <ul class="card-list">
+        <li>Hardhat proje yapısı</li>
+        <li>MultiSigWallet, OwnerManager, TransactionManager imzaları</li>
+        <li>Event tanımları (ABI kesinleşir)</li>
+        <li>OpenZeppelin ReentrancyGuard import</li>
+        <li>M ≥ N/2 hard-code kuralı</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--mb);color:var(--m)">3 contract compile ✓</span>
+        <span class="tag" style="background:var(--mb);color:var(--m)">ABI paylaşıldı</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--el);border-color:var(--eb)">
+      <div class="card-meta"><span class="badge" style="background:var(--eb);color:var(--e)">Emine</span><span class="days">05–11 Mayıs</span></div>
+      <div class="card-title">Python ortam + Web3.py + deployment script</div>
+      <ul class="card-list">
+        <li>venv, requirements.txt</li>
+        <li>Web3.py → Hardhat local node bağlantısı</li>
+        <li>Deploy script (3 contract sıralı)</li>
+        <li>wallet_service.py fonksiyon iskeletleri (mock)</li>
+        <li>Config yapısı (.env, addresses)</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--eb);color:var(--e)">isConnected() True</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Mock servis çalışıyor</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--il);border-color:var(--ib)">
+      <div class="card-meta"><span class="badge" style="background:var(--ib);color:var(--i)">İrem</span><span class="days">05–11 Mayıs</span></div>
+      <div class="card-title">Test altyapısı + Streamlit wireframe</div>
+      <ul class="card-list">
+        <li>Hardhat test (Mocha/Chai) + Pytest kurulumu</li>
+        <li>solidity-coverage eklentisi</li>
+        <li>Streamlit sayfa yapısı (Create / Pending / History)</li>
+        <li>Emine'nin mock servisine bağlanan UI taslağı</li>
+        <li>CI script taslağı</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Test suite çalışıyor</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Streamlit açılıyor</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HAFTA 2 ===== -->
+<div class="phase" data-ph="2">
+  <div class="ph-hdr"><span class="ph-lbl">Hafta 2 · 12–18 Mayıs · Temel fonksiyonlar & ilk testler</span><div class="ph-line"></div></div>
+
+  <div style="margin-bottom:8px">
+    <div class="shared-card">
+      <div class="shared-hdr">
+        <span class="shared-badge">Ortak · 12 Mayıs (Pazartesi)</span>
+        <span class="shared-days">~30 dk · Haftalık sync</span>
+      </div>
+      <div class="shared-title">Hafta 1 ABI teslim kontrolü — Emine ve İrem mock'ları gerçek implementasyona geçirir</div>
+      <div class="dep-note">Merve'nin ABI'si hazırsa: Emine wallet_service.py'yi gerçek contract çağrılarıyla günceller. İrem UI'ı gerçek servise bağlar. Hazır değilse mock'larla devam — hafta 2 sonu son teslim.</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="background:var(--ml);border-color:var(--mb)">
+      <div class="card-meta"><span class="badge" style="background:var(--mb);color:var(--m)">Merve</span><span class="days">12–18 Mayıs</span></div>
+      <div class="card-title">M-of-N core logic + time-lock mekanizması</div>
+      <ul class="card-list">
+        <li>confirmTransaction: imza sayacı, duplikat kontrol</li>
+        <li>executeTransaction: threshold check, CEI pattern</li>
+        <li>Nonce + chainId replay koruması (EIP-155)</li>
+        <li>24h / 48h time-lock (value bazlı)</li>
+        <li>emergencyPause mekanizması</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--mb);color:var(--m)">2-of-3 execute ✓</span>
+        <span class="tag" style="background:var(--mb);color:var(--m)">Replay → revert ✓</span>
+        <span class="tag" style="background:var(--mb);color:var(--m)">Time-lock bypass → revert</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--el);border-color:var(--eb)">
+      <div class="card-meta"><span class="badge" style="background:var(--eb);color:var(--e)">Emine</span><span class="days">12–18 Mayıs</span></div>
+      <div class="card-title">EIP-712 imza toplama + batch submit modülü</div>
+      <ul class="card-list">
+        <li>propose_transaction(), confirm_transaction() gerçek implementasyon</li>
+        <li>EIP-712 typed data (domain separator, struct hash)</li>
+        <li>Off-chain M imza topla → tek tx submit</li>
+        <li>Event log parse (pending tx listesi)</li>
+        <li>calldata vs memory gas karşılaştırması başlangıcı</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--eb);color:var(--e)">EIP-712 sign ✓</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">ecrecover doğruluyor</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Batch tx çalışıyor</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--il);border-color:var(--ib)">
+      <div class="card-meta"><span class="badge" style="background:var(--ib);color:var(--i)">İrem</span><span class="days">12–18 Mayıs</span></div>
+      <div class="card-title">Unit testler + transaction flow UI</div>
+      <ul class="card-list">
+        <li>Wallet creation testleri (valid / invalid M-of-N)</li>
+        <li>addOwner / removeOwner başarı & revert testleri</li>
+        <li>Pending tx listesi UI (onay sayısı, durum)</li>
+        <li>Onayla / Reddet butonları</li>
+        <li>Tx detay modal (hedef, miktar, data)</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--ib);color:var(--i)">>15 unit test geçiyor</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Coverage ≥ 70%</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">UI tx submit ✓</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HAFTA 3 ===== -->
+<div class="phase" data-ph="3">
+  <div class="ph-hdr"><span class="ph-lbl">Hafta 3 · 19–25 Mayıs · Güvenlik testi & entegrasyon</span><div class="ph-line"></div></div>
+
+  <div style="margin-bottom:8px">
+    <div class="shared-card">
+      <div class="shared-hdr">
+        <span class="shared-badge">Ortak · 19 Mayıs (Pazartesi)</span>
+        <span class="shared-days">~1 saat · Entegrasyon günü</span>
+      </div>
+      <div class="shared-title">UI ↔ Backend ↔ Contract tam bağlantı — 3'ünüz aynı anda</div>
+      <div class="shared-cols">
+        <div>
+          <div class="shared-col-title" style="color:var(--m)">Merve</div>
+          <ul class="shared-list">
+            <li>Contract'ı local'de çalıştırır</li>
+            <li>Beklenmedik revert varsa düzeltir</li>
+          </ul>
+        </div>
+        <div>
+          <div class="shared-col-title" style="color:var(--e)">Emine</div>
+          <ul class="shared-list">
+            <li>Backend çağrılarını canlı contract'a bağlar</li>
+            <li>Event listener'ın çalıştığını doğrular</li>
+          </ul>
+        </div>
+        <div>
+          <div class="shared-col-title" style="color:var(--i)">İrem</div>
+          <ul class="shared-list">
+            <li>UI → backend uçtan uca test eder</li>
+            <li>Hata mesajlarını UI'a yansıtır</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dep-note">Hedef: 2-of-3 wallet oluştur → tx gönder → 2 onay al → execute — tüm akış Streamlit üzerinden çalışıyor olsun.</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="background:var(--ml);border-color:var(--mb)">
+      <div class="card-meta"><span class="badge" style="background:var(--mb);color:var(--m)">Merve</span><span class="days">19–25 Mayıs</span></div>
+      <div class="card-title">Slither & Mythril + manuel audit</div>
+      <ul class="card-list">
+        <li>Slither çalıştır → tüm bulguları belgele</li>
+        <li>Mythril symbolic execution (bytecode)</li>
+        <li>Critical / High bulgu → anında düzelt</li>
+        <li>Access control checklist (her admin fonksiyon)</li>
+        <li>ECDSA doğrulama manuel review</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--mb);color:var(--m)">0 Critical bulgu</span>
+        <span class="tag" style="background:var(--mb);color:var(--m)">0 High bulgu</span>
+        <span class="tag" style="background:var(--mb);color:var(--m)">Audit raporu taslağı</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--el);border-color:var(--eb)">
+      <div class="card-meta"><span class="badge" style="background:var(--eb);color:var(--e)">Emine</span><span class="days">19–25 Mayıs</span></div>
+      <div class="card-title">Gas benchmark — Gnosis Safe karşılaştırması</div>
+      <ul class="card-list">
+        <li>4 işlem gas ölçümü: deploy, submit, confirm, execute</li>
+        <li>Standard (on-chain) vs batch karşılaştırması</li>
+        <li>Gnosis Safe mainnet gas verileriyle tablo</li>
+        <li>Tasarruf yüzdesini hesapla</li>
+        <li>Sonuçları grafik olarak görselleştir</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Gas tablo (4 işlem)</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Batch tasarruf %</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Gnosis karşılaştırma</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--il);border-color:var(--ib)">
+      <div class="card-meta"><span class="badge" style="background:var(--ib);color:var(--i)">İrem</span><span class="days">19–25 Mayıs</span></div>
+      <div class="card-title">Saldırı testleri + coverage ≥ %90</div>
+      <ul class="card-list">
+        <li>Reentrancy simülasyonu → revert</li>
+        <li>Replay attack (aynı nonce) → revert</li>
+        <li>Threshold bypass → revert</li>
+        <li>Yetkisiz owner ekleme → revert</li>
+        <li>Eksik coverage satırları → edge case test ekle</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı / Metrik</div>
+        <span class="tag" style="background:var(--ib);color:var(--i)">4/4 saldırı engellendi</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Coverage ≥ 90%</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">100% test pass</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HAFTA 4 ===== -->
+<div class="phase" data-ph="4">
+  <div class="ph-hdr"><span class="ph-lbl">Hafta 4 · 26 Mayıs – 01 Haziran · Testnet deploy & raporlama</span><div class="ph-line"></div></div>
+
+  <div style="margin-bottom:8px">
+    <div class="shared-card">
+      <div class="shared-hdr">
+        <span class="shared-badge">Ortak · 26 Mayıs (Pazartesi)</span>
+        <span class="shared-days">~1 saat · Testnet smoke test</span>
+      </div>
+      <div class="shared-title">Sepolia deploy sonrası canlı 2-of-3 demo — 3'ünüz farklı cüzdandan onay verir</div>
+      <div class="shared-cols">
+        <div>
+          <div class="shared-col-title" style="color:var(--m)">Merve</div>
+          <ul class="shared-list">
+            <li>Contract'ı Sepolia'ya deploy eder</li>
+            <li>Etherscan verify yapar</li>
+            <li>Owner 1 olarak tx önerir</li>
+          </ul>
+        </div>
+        <div>
+          <div class="shared-col-title" style="color:var(--e)">Emine</div>
+          <ul class="shared-list">
+            <li>Owner 2 olarak onay verir</li>
+            <li>Canlı event log'u izler</li>
+          </ul>
+        </div>
+        <div>
+          <div class="shared-col-title" style="color:var(--i)">İrem</div>
+          <ul class="shared-list">
+            <li>Streamlit üzerinden onaylar</li>
+            <li>Ekran görüntüsü / video kaydeder</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dep-note">Bu demo hem testnet doğrulaması hem de rapordaki "prototip çalışıyor" kanıtı. Ekran görüntüleri rapora girer.</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-bottom:8px">
+    <div class="card" style="background:var(--ml);border-color:var(--mb)">
+      <div class="card-meta"><span class="badge" style="background:var(--mb);color:var(--m)">Merve</span><span class="days">27–29 Mayıs</span></div>
+      <div class="card-title">Rapor: Bölüm 1–3 + güvenlik analizi</div>
+      <ul class="card-list">
+        <li>Giriş, problem tanımı, mimari açıklaması</li>
+        <li>Attack vector → mitigation tablosu</li>
+        <li>Slither / Mythril bulgu özeti</li>
+        <li>Smart contract mimari diyagramı</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı</div>
+        <span class="tag" style="background:var(--mb);color:var(--m)">Bölüm 1-3 taslak</span>
+        <span class="tag" style="background:var(--mb);color:var(--m)">Güvenlik tablosu</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--el);border-color:var(--eb)">
+      <div class="card-meta"><span class="badge" style="background:var(--eb);color:var(--e)">Emine</span><span class="days">27–29 Mayıs</span></div>
+      <div class="card-title">Rapor: Bölüm 4 + README + gas grafikleri</div>
+      <ul class="card-list">
+        <li>Platform bileşenleri açıklaması</li>
+        <li>Gas benchmark tablosu ve grafiği</li>
+        <li>README (kurulum, deploy, kullanım)</li>
+        <li>.env.example belgele</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı</div>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Bölüm 4 taslak</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">README tamamlandı</span>
+        <span class="tag" style="background:var(--eb);color:var(--e)">Gas grafiği</span>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--il);border-color:var(--ib)">
+      <div class="card-meta"><span class="badge" style="background:var(--ib);color:var(--i)">İrem</span><span class="days">27–29 Mayıs</span></div>
+      <div class="card-title">Rapor: Bölüm 5 + test raporu + sunum</div>
+      <ul class="card-list">
+        <li>Test sonuçları tablosu (pass/fail)</li>
+        <li>Coverage ≥ %90 raporu PDF</li>
+        <li>Değerlendirme bölümü yazımı</li>
+        <li>Sunum slaytları (demo dahil)</li>
+      </ul>
+      <div class="mtx">
+        <div class="mtx-lbl">Çıktı</div>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Bölüm 5 taslak</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Test raporu PDF</span>
+        <span class="tag" style="background:var(--ib);color:var(--i)">Sunum hazır</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="shared-card">
+    <div class="shared-hdr">
+      <span class="shared-badge">Ortak · 30 Mayıs – 01 Haziran</span>
+      <span class="shared-days">~2 saat · Final birleştirme</span>
+    </div>
+    <div class="shared-title">Rapor bölümlerini birleştir, çapraz okuma yap, teslim et</div>
+    <div class="shared-cols">
+      <div>
+        <div class="shared-col-title" style="color:var(--m)">Merve</div>
+        <ul class="shared-list">
+          <li>Bölüm 1-3'ü Emine / İrem'in bölümleriyle tutarlılık kontrolü</li>
+          <li>Sonuç bölümüne katkı</li>
+        </ul>
+      </div>
+      <div>
+        <div class="shared-col-title" style="color:var(--e)">Emine</div>
+        <ul class="shared-list">
+          <li>Gas tablolarının metin ile örtüştüğünü kontrol</li>
+          <li>Referanslar listesini düzenle</li>
+        </ul>
+      </div>
+      <div>
+        <div class="shared-col-title" style="color:var(--i)">İrem</div>
+        <ul class="shared-list">
+          <li>Tüm raporu bir kez okuyup format kontrolü</li>
+          <li>Sunum prova + son PDF export</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÖZET -->
+<div class="sum-grid">
+  <div class="sum-card" style="background:var(--ml)">
+    <div class="sum-name" style="color:var(--m)">Merve Çakır</div>
+    <div class="sum-role" style="color:var(--m)">Smart Contract & Güvenlik</div>
+    <ul class="sum-list">
+      <li style="list-style:none">3 Solidity contract</li>
+      <li style="list-style:none">Slither / Mythril audit</li>
+      <li style="list-style:none">Time-lock & replay koruması</li>
+      <li style="list-style:none">Testnet deploy + Etherscan</li>
+      <li style="list-style:none">Rapor Bölüm 1–3</li>
+    </ul>
+  </div>
+  <div class="sum-card" style="background:var(--el)">
+    <div class="sum-name" style="color:var(--e)">Emine Binay</div>
+    <div class="sum-role" style="color:var(--e)">Backend & Entegrasyon</div>
+    <ul class="sum-list">
+      <li style="list-style:none">Web3.py / Python backend</li>
+      <li style="list-style:none">EIP-712 imza toplama</li>
+      <li style="list-style:none">Gas optimizasyon & benchmark</li>
+      <li style="list-style:none">README & deployment</li>
+      <li style="list-style:none">Rapor Bölüm 4</li>
+    </ul>
+  </div>
+  <div class="sum-card" style="background:var(--il)">
+    <div class="sum-name" style="color:var(--i)">İrem Keskin</div>
+    <div class="sum-role" style="color:var(--i)">Frontend & Test</div>
+    <ul class="sum-list">
+      <li style="list-style:none">Streamlit dashboard</li>
+      <li style="list-style:none">Unit & integration testler</li>
+      <li style="list-style:none">Adversarial test scriptleri</li>
+      <li style="list-style:none">Coverage ≥ %90</li>
+      <li style="list-style:none">Rapor Bölüm 5 + Sunum</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function show(p,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.phase').forEach(el=>{
+    el.classList.toggle('hidden', p!=='all' && el.dataset.ph!==p);
+  });
+}
+</script>

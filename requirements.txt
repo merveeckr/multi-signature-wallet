@@ -1,0 +1,17 @@
+# ─── Blockchain & Web3 ────────────────────────────────────────────────────────
+web3==6.20.3                # Ethereum node bağlantısı, contract çağrıları
+eth-account==0.13.4         # EIP-712 imzalama, private key yönetimi
+eth-typing==5.0.1           # Web3.py tip tanımları
+
+# ─── Ortam & Konfigürasyon ────────────────────────────────────────────────────
+python-dotenv==1.0.1        # .env dosyasından RPC_URL, PRIVATE_KEY okuma
+
+# ─── Frontend (İrem) ──────────────────────────────────────────────────────────
+streamlit==1.45.1           # Wallet dashboard UI
+
+# ─── Test (İrem) ──────────────────────────────────────────────────────────────
+pytest==8.3.5               # Unit & integration test runner
+pytest-asyncio==0.24.0      # Async test desteği
+
+# ─── Yardımcı ─────────────────────────────────────────────────────────────────
+requests==2.32.3            # HTTP istekleri (Etherscan API, faucet vb.)
