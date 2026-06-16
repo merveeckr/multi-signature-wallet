@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x883f6b9ea658D8c74999C788903677fB7eAE9a1e",
+  "contractAddress": "0x61cFbA410427DAc72294e0E29304131b7088491e",
   "deployer": "0x95e4D1356B2D6Ec1fCfe8cBA71e4f6E2AF7FcE78",
   "owners": [
     "0x95e4D1356B2D6Ec1fCfe8cBA71e4f6E2AF7FcE78",
@@ -9,6 +9,6 @@
   "numConfirmationsRequired": 2,
   "network": "sepolia",
   "chainId": 11155111,
-  "deployTxHash": "0x72e0a4b15333434737572566219978bbd8de25bdc2da7c816ad7914220236f73",
-  "deployedAt": "2026-06-09T16:55:16.881Z"
+  "deployTxHash": "0x1f1aa1f7d8eb6d6bc23bcf71278a64c25bb7c9e01fd666a8148f557a0480b5ec",
+  "deployedAt": "2026-06-16T17:19:14.769Z"
 }

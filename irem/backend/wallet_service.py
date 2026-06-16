@@ -110,32 +110,26 @@ def get_pending_transactions():
     İrem'in arayüzündeki "Bekleyen İşlemler" tablosunu doldurmak için
     kullanılır. Her satır bir işlemi temsil eder.
     """
-    try:
-        total = contract.functions.getTransactionCount().call()
-        pending = []
+    total = contract.functions.getTransactionCount().call()
+    threshold = contract.functions.numConfirmationsRequired().call()
+    pending = []
 
-        for i in range(total):
-            to, value, _, executed, num_confirmations = \
-                contract.functions.getTransaction(i).call()
+    for i in range(total):
+        to, value, _, executed, num_confirmations = \
+            contract.functions.getTransaction(i).call()
 
-            if executed:
-                continue
+        if executed:
+            continue
 
-            threshold = contract.functions.numConfirmationsRequired().call()
-            is_executable = num_confirmations >= threshold
+        pending.append({
+            "id":                    i,
+            "recipient":             to,
+            "amount_eth":            float(w3.from_wei(value, "ether")),
+            "current_confirmations": num_confirmations,
+            "is_executable":         num_confirmations >= threshold,
+        })
 
-            pending.append({
-                "id":                    i,
-                "recipient":             to,
-                "amount_eth":            float(w3.from_wei(value, "ether")),
-                "current_confirmations": num_confirmations,
-                "is_executable":         is_executable,
-            })
-        
-        return pending
-
-    except Exception:
-        raise
+    return pending
 
 
 # ── FONKSİYON 3: İşlem Onaylama ──────────────────────────
@@ -160,7 +154,7 @@ def approve_transaction(transaction_id: int, private_key: str = None):
     
 
 # ── FONKSİYON 4: İşlem Teklifi Oluşturma ─────────────────
-def submit_transaction(to: str, amount_eth: float, data: bytes = b"", private_key: str = None):
+def submit_transaction(to: str, amount_eth: float, private_key: str = None, data: bytes = b""):
     """
     Yeni bir işlem teklifi oluşturur ve pending listeye ekler.
     """
@@ -241,6 +235,32 @@ def get_active_address(private_key: str = None) -> str:
     if private_key:
         return w3.eth.account.from_key(private_key).address
     return account.address
+
+
+def get_paused_status() -> bool:
+    """Cüzdanın dondurulup dondurulmadığını döner."""
+    try:
+        return contract.functions.paused().call()
+    except Exception:
+        return False
+
+
+def pause_wallet(private_key: str = None):
+    """Cüzdanı acil olarak dondurur. Sadece owner çağırabilir."""
+    try:
+        receipt = _send_tx(contract.functions.pause(), private_key=private_key)
+        return {"status": "success", "tx_hash": receipt.transactionHash.hex()}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+def unpause_wallet(private_key: str = None):
+    """Dondurulmuş cüzdanı yeniden açar. Sadece owner çağırabilir."""
+    try:
+        receipt = _send_tx(contract.functions.unpause(), private_key=private_key)
+        return {"status": "success", "tx_hash": receipt.transactionHash.hex()}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 def get_confirmation_status(transaction_id: int, owner_address: str):

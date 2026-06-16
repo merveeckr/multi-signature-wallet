@@ -32,7 +32,7 @@ abstract contract TransactionManager {
     mapping(uint256 => uint256) public readyTime;
 
     /// @notice execute öncesi beklenmesi gereken süre (saniye). Varsayılan: 24 saat.
-    uint256 public timeLockDuration = 5 minutes;
+    uint256 public timeLockDuration = 0;
 
     /// @dev readyTime set edildi mi? Slither incorrect-equality uyarısını önler.
     mapping(uint256 => bool) private _timeLockInitialized;

@@ -15,7 +15,7 @@ export interface TransactionManager$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/TransactionManager.sol";
-  readonly buildInfoId: "solc-0_8_20-078626957fba37e4b3a20821e23b87d18a10959a";
+  readonly buildInfoId: "solc-0_8_20-d53b6c352456f10e772d6816f49dc3d1790c4aca";
 };
 
 import "hardhat/types/artifacts";
